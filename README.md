@@ -1,7 +1,13 @@
 # crm-mini — Міні-CRM: список клієнтів з AI-нотатками
 
+**Живе демо:** https://crm-mini-silk.vercel.app/
+
 Фронтенд застосунку. Стек: React 18 + Vite + TypeScript (strict) + Tailwind CSS +
 shadcn/ui-компоненти + Supabase (PostgreSQL) + React Router.
+
+AI-аналіз нотаток працює через OpenAI-сумісний API (за замовчуванням OpenAI;
+підтримуються також безкоштовні Groq та Google Gemini — провайдер задається
+секретами `OPENAI_BASE_URL` / `OPENAI_MODEL` Edge Function, без змін у коді).
 
 Бекенд-частина (SQL-міграції та Supabase Edge Function для AI-аналізу) знаходиться
 в окремому репозиторії `crm-mini-backend`.
