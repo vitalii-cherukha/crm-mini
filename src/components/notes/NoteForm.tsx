@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Sparkles } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
@@ -51,7 +51,7 @@ export function NoteForm({ onAddNote, isSubmitting }: NoteFormProps) {
             <FormItem>
               <FormControl>
                 <Textarea
-                  placeholder="Опишіть суть розмови з клієнтом..."
+                  placeholder="Напр.: Клієнт зацікавлений, просить комерційну пропозицію на 500 користувачів до кінця тижня"
                   className="min-h-24"
                   {...field}
                 />
@@ -62,8 +62,17 @@ export function NoteForm({ onAddNote, isSubmitting }: NoteFormProps) {
         />
         <div className="flex justify-end">
           <Button type="submit" disabled={isSubmitting}>
-            <Sparkles />
-            {isSubmitting ? "Аналіз AI..." : "Додати нотатку"}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="animate-spin" />
+                Аналізуємо...
+              </>
+            ) : (
+              <>
+                <Sparkles />
+                Додати нотатку
+              </>
+            )}
           </Button>
         </div>
       </form>

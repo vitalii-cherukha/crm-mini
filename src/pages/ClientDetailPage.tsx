@@ -1,9 +1,11 @@
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Building2, Mail, Phone } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import { ClientAvatar } from "@/components/clients/ClientAvatar";
 import { StatusBadge } from "@/components/clients/StatusBadge";
 import { NoteForm } from "@/components/notes/NoteForm";
 import { NoteList } from "@/components/notes/NoteList";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClient } from "@/hooks/useClient";
 import { useNotes } from "@/hooks/useNotes";
@@ -14,8 +16,8 @@ export function ClientDetailPage() {
   const { notes, isLoading: areNotesLoading, isAddingNote, addNote } = useNotes(id);
 
   return (
-    <div className="container py-8">
-      <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
+    <div className="grid gap-6">
+      <Button variant="ghost" size="sm" asChild className="-ml-2 w-fit">
         <Link to="/">
           <ArrowLeft />
           До списку клієнтів
@@ -23,10 +25,15 @@ export function ClientDetailPage() {
       </Button>
 
       {isClientLoading && (
-        <div className="mb-8 grid gap-2">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-5 w-96" />
-        </div>
+        <Card>
+          <CardContent className="flex items-center gap-4 pt-6">
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <div className="grid gap-2">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-72" />
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {clientError && !isClientLoading && (
@@ -36,30 +43,52 @@ export function ClientDetailPage() {
       )}
 
       {client && !isClientLoading && (
-        <div className="mb-8">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">{client.name}</h1>
-            <StatusBadge status={client.status} />
-          </div>
-          <dl className="mt-2 grid gap-1 text-sm text-muted-foreground">
-            {client.company && <dd>Компанія: {client.company}</dd>}
-            {client.phone && <dd>Телефон: {client.phone}</dd>}
-            {client.email && <dd>Email: {client.email}</dd>}
-          </dl>
-        </div>
+        <Card>
+          <CardContent className="flex flex-wrap items-center gap-4 pt-6">
+            <ClientAvatar name={client.name} className="h-12 w-12 text-base" />
+            <div className="grid gap-1.5">
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl font-semibold tracking-tight">{client.name}</h1>
+                <StatusBadge status={client.status} />
+              </div>
+              <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
+                {client.company && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Building2 className="h-4 w-4" />
+                    {client.company}
+                  </span>
+                )}
+                {client.phone && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Phone className="h-4 w-4" />
+                    {client.phone}
+                  </span>
+                )}
+                {client.email && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Mail className="h-4 w-4" />
+                    {client.email}
+                  </span>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
-      <div className="grid gap-6">
-        <section>
-          <h2 className="mb-3 text-lg font-medium">Нова нотатка</h2>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Нова нотатка</CardTitle>
+        </CardHeader>
+        <CardContent>
           <NoteForm onAddNote={addNote} isSubmitting={isAddingNote} />
-        </section>
+        </CardContent>
+      </Card>
 
-        <section>
-          <h2 className="mb-3 text-lg font-medium">Історія нотаток</h2>
-          <NoteList notes={notes} isLoading={areNotesLoading} />
-        </section>
-      </div>
+      <section className="grid gap-3">
+        <h2 className="text-lg font-semibold tracking-tight">Історія нотаток</h2>
+        <NoteList notes={notes} isLoading={areNotesLoading} />
+      </section>
     </div>
   );
 }

@@ -1,10 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { CLIENT_STATUS_LABELS, type ClientStatus } from "@/lib/types";
 
-const STATUS_VARIANT: Record<ClientStatus, "secondary" | "default" | "success"> = {
-  new: "secondary",
-  in_progress: "default",
-  closed: "success",
+const STATUS_VARIANT: Record<ClientStatus, "info" | "warning" | "secondary"> = {
+  new: "info",
+  in_progress: "warning",
+  closed: "secondary",
 };
 
 interface StatusBadgeProps {

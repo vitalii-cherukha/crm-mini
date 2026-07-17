@@ -71,15 +71,39 @@ npm run preview
    Supabase-проєкті — інакше AI-аналіз нотаток працюватиме з fallback (нотатка
    збережеться без AI-даних, з відповідним toast).
 
+## UI/UX
+
+- Загальний каркас — `src/components/layout/AppLayout.tsx`: верхній хедер з
+  лого "Mini-CRM" та перемикачем теми, контент у центрованому контейнері на
+  м'якому фоні (`bg-muted/30`), картки — `bg-card` з тінню.
+- Світла/темна тема — CSS-змінні токенів у `src/index.css` (`:root` і `.dark`),
+  перемикається кнопкою sun/moon у хедері через UI-хук `src/hooks/useTheme.ts`
+  (зберігає вибір у `localStorage`, клас `.dark` на `<html>`). У `index.html`
+  є інлайн-скрипт, що застосовує збережену тему до першого рендеру React —
+  без "спалаху" світлої теми при завантаженні.
+- Статуси клієнтів мають чіткі кольори: `new` — синій, `in_progress` —
+  бурштиновий, `closed` — нейтральний сірий (`src/components/ui/badge.tsx`,
+  варіанти `info`/`warning`/`secondary`).
+- Аватар-ініціали клієнта (`src/components/clients/ClientAvatar.tsx`) —
+  кольоровий кружечок з першими літерами імені, колір підбирається
+  детерміновано за імʼям.
+- Нотатки: кожна — картка з тонкою кольоровою смужкою зліва залежно від
+  sentiment AI-аналізу; якщо AI-аналіз не вдався — замість порожнечі показано
+  бейдж "AI-аналіз недоступний".
+
+Усі ці зміни — виключно презентаційні: пропси хуків/компонентів, контракти
+Supabase-запитів і AI-аналізу не змінювались.
+
 ## Структура проєкту
 
 ```
 src/
   components/
     ui/            # shadcn/ui-компоненти (button, dialog, form, toast, ...)
-    clients/       # ClientsTable, AddClientDialog, StatusBadge
+    layout/        # AppLayout, ThemeToggle
+    clients/       # ClientsTable, AddClientDialog, StatusBadge, ClientAvatar
     notes/         # NoteForm, NoteList, NoteItem, SentimentIndicator
-  hooks/           # useClients, useClient, useNotes
+  hooks/           # useClients, useClient, useNotes, useTheme (UI)
   lib/
     types.ts       # Client, Note, ClientStatus, Sentiment, NoteAiAnalysis
     supabase.ts    # Supabase-клієнт

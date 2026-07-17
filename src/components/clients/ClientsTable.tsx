@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { ClientAvatar } from "@/components/clients/ClientAvatar";
 import { StatusBadge } from "@/components/clients/StatusBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -59,7 +60,12 @@ export function ClientsTable({ clients, isLoading }: ClientsTableProps) {
               className="cursor-pointer"
               onClick={() => navigate(`/clients/${client.id}`)}
             >
-              <TableCell className="font-medium">{client.name}</TableCell>
+              <TableCell className="font-medium">
+                <div className="flex items-center gap-3">
+                  <ClientAvatar name={client.name} />
+                  {client.name}
+                </div>
+              </TableCell>
               <TableCell>{client.company ?? "—"}</TableCell>
               <TableCell>{client.phone ?? "—"}</TableCell>
               <TableCell>{client.email ?? "—"}</TableCell>
