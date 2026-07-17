@@ -2,15 +2,16 @@
 
 **Живе демо:** https://crm-mini-silk.vercel.app/
 
-Фронтенд застосунку. Стек: React 18 + Vite + TypeScript (strict) + Tailwind CSS +
-shadcn/ui-компоненти + Supabase (PostgreSQL) + React Router.
+Повний застосунок (фронтенд + Supabase-бекенд) в одному репозиторії. Стек:
+React 18 + Vite + TypeScript (strict) + Tailwind CSS + shadcn/ui-компоненти +
+Supabase (PostgreSQL + Edge Functions) + React Router.
 
 AI-аналіз нотаток працює через OpenAI-сумісний API (за замовчуванням OpenAI;
 підтримуються також безкоштовні Groq та Google Gemini — провайдер задається
 секретами `OPENAI_BASE_URL` / `OPENAI_MODEL` Edge Function, без змін у коді).
 
-Бекенд-частина (SQL-міграції та Supabase Edge Function для AI-аналізу) знаходиться
-в окремому репозиторії `crm-mini-backend`.
+Бекенд-частина (SQL-міграція та Supabase Edge Function для AI-аналізу) — у теці
+`supabase/` цього ж репозиторію.
 
 ## Функціонал
 
@@ -31,10 +32,10 @@ npm install
 ## 2. Налаштування Supabase
 
 1. Створи проєкт на [supabase.com](https://supabase.com).
-2. У SQL Editor виконай міграцію з `crm-mini-backend/supabase/migrations/0001_init.sql`
+2. У SQL Editor виконай міграцію з `supabase/migrations/0001_init.sql`
    (створює таблиці `clients`, `notes`, RLS-політики).
-3. Розгорни Edge Function `analyze-note` з `crm-mini-backend` (див. README того
-   репозиторію) — вона обробляє AI-аналіз нотаток.
+3. Розгорни Edge Function `analyze-note` (див. розділ «Бекенд (Supabase)» нижче) —
+   вона обробляє AI-аналіз нотаток.
 4. Скопіюй `.env.example` у `.env` і заповни:
 
 ```bash
@@ -47,8 +48,8 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 ```
 
 Ці значення бери зі Supabase Dashboard → Project Settings → API. Секретний
-LLM-ключ (OpenAI/Claude/Gemini) сюди НЕ додається — він живе лише як секрет
-Edge Function на боці `crm-mini-backend`.
+LLM-ключ (OpenAI/Groq/Gemini) сюди НЕ додається — він живе лише як секрет
+Edge Function (див. розділ «Бекенд (Supabase)»).
 
 ## 3. Запуск у розробці
 
@@ -76,6 +77,62 @@ npm run preview
 4. Задеплой. Переконайся, що Edge Function `analyze-note` уже розгорнута в
    Supabase-проєкті — інакше AI-аналіз нотаток працюватиме з fallback (нотатка
    збережеться без AI-даних, з відповідним toast).
+
+## 6. Бекенд (Supabase)
+
+Уся бекенд-частина — у теці `supabase/`:
+
+```
+supabase/
+  config.toml
+  migrations/0001_init.sql          # таблиці clients, notes + RLS
+  functions/analyze-note/index.ts   # Edge Function AI-аналізу (Deno)
+```
+
+### Деплой Edge Function
+
+```bash
+supabase login
+supabase functions deploy analyze-note --project-ref your-project-ref
+```
+
+### Секрети (LLM-провайдер)
+
+LLM API-ключ живе ЛИШЕ як секрет Edge Function і ніколи не потрапляє на фронтенд.
+Функція провайдер-агностична — підтримує будь-який OpenAI-сумісний API.
+
+Безкоштовний **Groq** (без картки, рекомендовано для тестового):
+
+```bash
+supabase secrets set OPENAI_API_KEY=gsk_... --project-ref your-project-ref
+supabase secrets set OPENAI_BASE_URL=https://api.groq.com/openai/v1/chat/completions --project-ref your-project-ref
+supabase secrets set OPENAI_MODEL=llama-3.3-70b-versatile --project-ref your-project-ref
+```
+
+Альтернативи: **OpenAI** (лишити `OPENAI_BASE_URL` порожнім, `OPENAI_MODEL=gpt-4o-mini`)
+або **Google Gemini** (`OPENAI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`,
+`OPENAI_MODEL=gemini-2.0-flash`).
+
+### Перевірка функції
+
+```bash
+curl -X POST 'https://your-project-ref.supabase.co/functions/v1/analyze-note' \
+  -H 'Content-Type: application/json' \
+  -H 'apikey: your-anon-key' \
+  -H 'Authorization: Bearer your-anon-key' \
+  -d '{"text":"Клієнт дуже зацікавлений, великий бюджет, просив передзвонити."}'
+```
+
+Очікувано: `{"summary":"...","tags":["...","..."],"sentiment":"positive"}`.
+
+## 7. Демо-дані (сидінг)
+
+`seed.mjs` наповнює БД прикладами (10 клієнтів + нотатки), проганяючи кожну
+нотатку через реальний AI-аналіз:
+
+```bash
+node seed.mjs   # бере VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY з .env або дефолти в скрипті
+```
 
 ## UI/UX
 
