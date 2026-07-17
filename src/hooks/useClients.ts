@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import type { Client, NewClient } from "@/lib/types";
+import type { Client, ClientStatus, NewClient } from "@/lib/types";
 
 interface UseClientsResult {
   clients: Client[];
   isLoading: boolean;
   error: string | null;
   addClient: (input: NewClient) => Promise<Client>;
+  updateClientStatus: (clientId: string, status: ClientStatus) => Promise<void>;
   refetch: () => Promise<void>;
 }
 
@@ -61,5 +62,20 @@ export function useClients(): UseClientsResult {
     return data;
   }, []);
 
-  return { clients, isLoading, error, addClient, refetch: fetchClients };
+  const updateClientStatus = useCallback(async (clientId: string, status: ClientStatus) => {
+    const { data, error: updateError } = await supabase
+      .from("clients")
+      .update({ status })
+      .eq("id", clientId)
+      .select(CLIENT_LIST_COLUMNS)
+      .single();
+
+    if (updateError) {
+      throw new Error(updateError.message);
+    }
+
+    setClients((previous) => previous.map((client) => (client.id === clientId ? data : client)));
+  }, []);
+
+  return { clients, isLoading, error, addClient, updateClientStatus, refetch: fetchClients };
 }

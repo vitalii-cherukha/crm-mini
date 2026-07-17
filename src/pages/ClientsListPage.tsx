@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useClients } from "@/hooks/useClients";
 
 export function ClientsListPage() {
-  const { clients, isLoading, error, addClient } = useClients();
+  const { clients, isLoading, error, addClient, updateClientStatus } = useClients();
 
   const showEmptyState = !isLoading && !error && clients.length === 0;
 
@@ -52,7 +52,11 @@ export function ClientsListPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <ClientsTable clients={clients} isLoading={isLoading} />
+            <ClientsTable
+              clients={clients}
+              isLoading={isLoading}
+              onUpdateStatus={updateClientStatus}
+            />
           </CardContent>
         </Card>
       )}

@@ -1,7 +1,7 @@
 import { ArrowLeft, Building2, Mail, Phone } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { ClientAvatar } from "@/components/clients/ClientAvatar";
-import { StatusBadge } from "@/components/clients/StatusBadge";
+import { ClientStatusSelect } from "@/components/clients/ClientStatusSelect";
 import { NoteForm } from "@/components/notes/NoteForm";
 import { NoteList } from "@/components/notes/NoteList";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,12 @@ import { useNotes } from "@/hooks/useNotes";
 
 export function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
-  const { client, isLoading: isClientLoading, error: clientError } = useClient(id);
+  const {
+    client,
+    isLoading: isClientLoading,
+    error: clientError,
+    updateStatus,
+  } = useClient(id);
   const { notes, isLoading: areNotesLoading, isAddingNote, addNote } = useNotes(id);
 
   return (
@@ -49,7 +54,11 @@ export function ClientDetailPage() {
             <div className="grid gap-1.5">
               <div className="flex items-center gap-3">
                 <h1 className="text-xl font-semibold tracking-tight">{client.name}</h1>
-                <StatusBadge status={client.status} />
+                <ClientStatusSelect
+                  status={client.status}
+                  onStatusChange={updateStatus}
+                  className="h-8 text-sm"
+                />
               </div>
               <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
                 {client.company && (

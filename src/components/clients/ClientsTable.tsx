@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ClientAvatar } from "@/components/clients/ClientAvatar";
-import { StatusBadge } from "@/components/clients/StatusBadge";
+import { ClientStatusSelect } from "@/components/clients/ClientStatusSelect";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -10,16 +10,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Client } from "@/lib/types";
+import type { Client, ClientStatus } from "@/lib/types";
 
 interface ClientsTableProps {
   clients: Client[];
   isLoading: boolean;
+  onUpdateStatus: (clientId: string, status: ClientStatus) => Promise<void>;
 }
 
 const SKELETON_ROWS = 5;
 
-export function ClientsTable({ clients, isLoading }: ClientsTableProps) {
+export function ClientsTable({ clients, isLoading, onUpdateStatus }: ClientsTableProps) {
   const navigate = useNavigate();
 
   return (
@@ -70,7 +71,10 @@ export function ClientsTable({ clients, isLoading }: ClientsTableProps) {
               <TableCell>{client.phone ?? "—"}</TableCell>
               <TableCell>{client.email ?? "—"}</TableCell>
               <TableCell>
-                <StatusBadge status={client.status} />
+                <ClientStatusSelect
+                  status={client.status}
+                  onStatusChange={(status) => onUpdateStatus(client.id, status)}
+                />
               </TableCell>
             </TableRow>
           ))}

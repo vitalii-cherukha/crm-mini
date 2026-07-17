@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import type { Client } from "@/lib/types";
+import type { Client, ClientStatus } from "@/lib/types";
+
+const CLIENT_COLUMNS = "id, name, company, phone, email, status, created_at";
 
 interface UseClientResult {
   client: Client | null;
   isLoading: boolean;
   error: string | null;
+  updateStatus: (status: ClientStatus) => Promise<void>;
   refetch: () => Promise<void>;
 }
 
@@ -25,7 +28,7 @@ export function useClient(clientId: string | undefined): UseClientResult {
 
     const { data, error: fetchError } = await supabase
       .from("clients")
-      .select("id, name, company, phone, email, status, created_at")
+      .select(CLIENT_COLUMNS)
       .eq("id", clientId)
       .maybeSingle();
 
@@ -49,5 +52,27 @@ export function useClient(clientId: string | undefined): UseClientResult {
     void fetchClient();
   }, [fetchClient]);
 
-  return { client, isLoading, error, refetch: fetchClient };
+  const updateStatus = useCallback(
+    async (status: ClientStatus) => {
+      if (!clientId) {
+        throw new Error("Не вказано ідентифікатор клієнта");
+      }
+
+      const { data, error: updateError } = await supabase
+        .from("clients")
+        .update({ status })
+        .eq("id", clientId)
+        .select(CLIENT_COLUMNS)
+        .single();
+
+      if (updateError) {
+        throw new Error(updateError.message);
+      }
+
+      setClient(data);
+    },
+    [clientId],
+  );
+
+  return { client, isLoading, error, updateStatus, refetch: fetchClient };
 }
