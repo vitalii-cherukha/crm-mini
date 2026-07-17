@@ -8,6 +8,7 @@ interface UseClientsResult {
   error: string | null;
   addClient: (input: NewClient) => Promise<Client>;
   updateClientStatus: (clientId: string, status: ClientStatus) => Promise<void>;
+  deleteClient: (clientId: string) => Promise<void>;
   refetch: () => Promise<void>;
 }
 
@@ -77,5 +78,23 @@ export function useClients(): UseClientsResult {
     setClients((previous) => previous.map((client) => (client.id === clientId ? data : client)));
   }, []);
 
-  return { clients, isLoading, error, addClient, updateClientStatus, refetch: fetchClients };
+  const deleteClient = useCallback(async (clientId: string) => {
+    const { error: deleteError } = await supabase.from("clients").delete().eq("id", clientId);
+
+    if (deleteError) {
+      throw new Error(deleteError.message);
+    }
+
+    setClients((previous) => previous.filter((client) => client.id !== clientId));
+  }, []);
+
+  return {
+    clients,
+    isLoading,
+    error,
+    addClient,
+    updateClientStatus,
+    deleteClient,
+    refetch: fetchClients,
+  };
 }

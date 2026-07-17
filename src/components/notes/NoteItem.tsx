@@ -1,12 +1,15 @@
-import { Sparkles } from "lucide-react";
+import { Sparkles, Trash2 } from "lucide-react";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { SentimentIndicator } from "@/components/notes/SentimentIndicator";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { Note, Sentiment } from "@/lib/types";
 
 interface NoteItemProps {
   note: Note;
+  onDelete: () => Promise<void>;
 }
 
 const SENTIMENT_ACCENT: Record<Sentiment, string> = {
@@ -40,7 +43,7 @@ function formatNoteDate(iso: string): string {
   return `${day} ${month} ${year}, ${hours}:${minutes}`;
 }
 
-export function NoteItem({ note }: NoteItemProps) {
+export function NoteItem({ note, onDelete }: NoteItemProps) {
   const hasAiAnalysis = Boolean(note.ai_summary && note.ai_sentiment);
   const accentClass = note.ai_sentiment ? SENTIMENT_ACCENT[note.ai_sentiment] : "border-l-border";
 
@@ -49,9 +52,25 @@ export function NoteItem({ note }: NoteItemProps) {
       <CardContent className="grid gap-2 pt-4">
         <div className="flex items-start justify-between gap-4">
           <p className="whitespace-pre-wrap text-sm">{note.text}</p>
-          <span className="shrink-0 text-xs text-muted-foreground">
-            {formatNoteDate(note.created_at)}
-          </span>
+          <div className="flex shrink-0 items-center gap-1">
+            <span className="text-xs text-muted-foreground">{formatNoteDate(note.created_at)}</span>
+            <ConfirmDialog
+              trigger={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span className="sr-only">Видалити нотатку</span>
+                </Button>
+              }
+              title="Видалити нотатку?"
+              description="Ця дія незворотна."
+              onConfirm={onDelete}
+            />
+          </div>
         </div>
 
         {hasAiAnalysis ? (

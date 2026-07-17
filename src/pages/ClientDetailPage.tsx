@@ -1,7 +1,8 @@
-import { ArrowLeft, Building2, Mail, Phone } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { ArrowLeft, Building2, Mail, Phone, Trash2 } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ClientAvatar } from "@/components/clients/ClientAvatar";
 import { ClientStatusSelect } from "@/components/clients/ClientStatusSelect";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { NoteForm } from "@/components/notes/NoteForm";
 import { NoteList } from "@/components/notes/NoteList";
 import { Button } from "@/components/ui/button";
@@ -12,13 +13,26 @@ import { useNotes } from "@/hooks/useNotes";
 
 export function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const {
     client,
     isLoading: isClientLoading,
     error: clientError,
     updateStatus,
+    deleteClient,
   } = useClient(id);
-  const { notes, isLoading: areNotesLoading, isAddingNote, addNote } = useNotes(id);
+  const {
+    notes,
+    isLoading: areNotesLoading,
+    isAddingNote,
+    addNote,
+    deleteNote,
+  } = useNotes(id);
+
+  async function handleDeleteClient() {
+    await deleteClient();
+    navigate("/");
+  }
 
   return (
     <div className="grid gap-6">
@@ -49,38 +63,56 @@ export function ClientDetailPage() {
 
       {client && !isClientLoading && (
         <Card>
-          <CardContent className="flex flex-wrap items-center gap-4 pt-6">
-            <ClientAvatar name={client.name} className="h-12 w-12 text-base" />
-            <div className="grid gap-1.5">
-              <div className="flex items-center gap-3">
-                <h1 className="text-xl font-semibold tracking-tight">{client.name}</h1>
-                <ClientStatusSelect
-                  status={client.status}
-                  onStatusChange={updateStatus}
-                  className="h-8 text-sm"
-                />
-              </div>
-              <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
-                {client.company && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <Building2 className="h-4 w-4" />
-                    {client.company}
-                  </span>
-                )}
-                {client.phone && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <Phone className="h-4 w-4" />
-                    {client.phone}
-                  </span>
-                )}
-                {client.email && (
-                  <span className="inline-flex items-center gap-1.5">
-                    <Mail className="h-4 w-4" />
-                    {client.email}
-                  </span>
-                )}
+          <CardContent className="flex flex-wrap items-start justify-between gap-4 pt-6">
+            <div className="flex flex-wrap items-center gap-4">
+              <ClientAvatar name={client.name} className="h-12 w-12 text-base" />
+              <div className="grid gap-1.5">
+                <div className="flex items-center gap-3">
+                  <h1 className="text-xl font-semibold tracking-tight">{client.name}</h1>
+                  <ClientStatusSelect
+                    status={client.status}
+                    onStatusChange={updateStatus}
+                    className="h-8 text-sm"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground">
+                  {client.company && (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Building2 className="h-4 w-4" />
+                      {client.company}
+                    </span>
+                  )}
+                  {client.phone && (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Phone className="h-4 w-4" />
+                      {client.phone}
+                    </span>
+                  )}
+                  {client.email && (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Mail className="h-4 w-4" />
+                      {client.email}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
+            <ConfirmDialog
+              trigger={
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Видалити клієнта
+                </Button>
+              }
+              title={`Видалити клієнта "${client.name}"?`}
+              description="Ця дія незворотна. Усі нотатки цього клієнта також будуть видалені."
+              onConfirm={handleDeleteClient}
+            />
           </CardContent>
         </Card>
       )}
@@ -96,7 +128,7 @@ export function ClientDetailPage() {
 
       <section className="grid gap-3">
         <h2 className="text-lg font-semibold tracking-tight">Історія нотаток</h2>
-        <NoteList notes={notes} isLoading={areNotesLoading} />
+        <NoteList notes={notes} isLoading={areNotesLoading} onDeleteNote={deleteNote} />
       </section>
     </div>
   );

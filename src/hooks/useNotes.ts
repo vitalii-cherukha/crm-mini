@@ -17,6 +17,7 @@ interface UseNotesResult {
   error: string | null;
   isAddingNote: boolean;
   addNote: (text: string) => Promise<AddNoteOutcome>;
+  deleteNote: (noteId: string) => Promise<void>;
   refetch: () => Promise<void>;
 }
 
@@ -97,5 +98,15 @@ export function useNotes(clientId: string | undefined): UseNotesResult {
     [clientId],
   );
 
-  return { notes, isLoading, error, isAddingNote, addNote, refetch: fetchNotes };
+  const deleteNote = useCallback(async (noteId: string) => {
+    const { error: deleteError } = await supabase.from("notes").delete().eq("id", noteId);
+
+    if (deleteError) {
+      throw new Error(deleteError.message);
+    }
+
+    setNotes((previous) => previous.filter((note) => note.id !== noteId));
+  }, []);
+
+  return { notes, isLoading, error, isAddingNote, addNote, deleteNote, refetch: fetchNotes };
 }

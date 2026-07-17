@@ -9,6 +9,7 @@ interface UseClientResult {
   isLoading: boolean;
   error: string | null;
   updateStatus: (status: ClientStatus) => Promise<void>;
+  deleteClient: () => Promise<void>;
   refetch: () => Promise<void>;
 }
 
@@ -74,5 +75,17 @@ export function useClient(clientId: string | undefined): UseClientResult {
     [clientId],
   );
 
-  return { client, isLoading, error, updateStatus, refetch: fetchClient };
+  const deleteClient = useCallback(async () => {
+    if (!clientId) {
+      throw new Error("Не вказано ідентифікатор клієнта");
+    }
+
+    const { error: deleteError } = await supabase.from("clients").delete().eq("id", clientId);
+
+    if (deleteError) {
+      throw new Error(deleteError.message);
+    }
+  }, [clientId]);
+
+  return { client, isLoading, error, updateStatus, deleteClient, refetch: fetchClient };
 }

@@ -5,9 +5,10 @@ import type { Note } from "@/lib/types";
 interface NoteListProps {
   notes: Note[];
   isLoading: boolean;
+  onDeleteNote: (noteId: string) => Promise<void>;
 }
 
-export function NoteList({ notes, isLoading }: NoteListProps) {
+export function NoteList({ notes, isLoading, onDeleteNote }: NoteListProps) {
   if (isLoading) {
     return (
       <div className="grid gap-3">
@@ -25,7 +26,7 @@ export function NoteList({ notes, isLoading }: NoteListProps) {
   return (
     <div className="grid gap-3">
       {notes.map((note) => (
-        <NoteItem key={note.id} note={note} />
+        <NoteItem key={note.id} note={note} onDelete={() => onDeleteNote(note.id)} />
       ))}
     </div>
   );
