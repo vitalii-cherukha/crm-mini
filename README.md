@@ -125,15 +125,6 @@ curl -X POST 'https://your-project-ref.supabase.co/functions/v1/analyze-note' \
 
 Очікувано: `{"summary":"...","tags":["...","..."],"sentiment":"positive"}`.
 
-## 7. Демо-дані (сидінг)
-
-`seed.mjs` наповнює БД прикладами (10 клієнтів + нотатки), проганяючи кожну
-нотатку через реальний AI-аналіз:
-
-```bash
-node seed.mjs   # бере VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY з .env або дефолти в скрипті
-```
-
 ## UI/UX
 
 - Загальний каркас — `src/components/layout/AppLayout.tsx`: верхній хедер з
